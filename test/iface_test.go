@@ -44,6 +44,9 @@ func TestIface(t *testing.T) {
 	if len(iface.OneCalls()) != len(ones) {
 		t.Errorf("onecalls = %v, want %v", len(iface.OneCalls()), len(ones))
 	}
+	if !iface.OneCalled() {
+		t.Errorf("OneCalled() = %v, want %v", iface.OneCalled(), true)
+	}
 	z := iface.Two(1, 2)
 	if z != 3 {
 		t.Errorf("z = %v, want %v", z, 3)
@@ -54,5 +57,8 @@ func TestIface(t *testing.T) {
 	}
 	if len(iface.TwoCalls()) != 0 {
 		t.Errorf("twocalls = %v, want %v", len(iface.TwoCalls()), 0)
+	}
+	if iface.OneCalled() {
+		t.Errorf("OneCalled() = %v, want %v", iface.OneCalled(), false)
 	}
 }

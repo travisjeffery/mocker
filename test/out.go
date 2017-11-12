@@ -57,8 +57,12 @@ type IfaceMock struct {
 
 // Reset resets the calls made to the mocked APIs.
 func (mock *IfaceMock) Reset() {
+	lockIfaceMockOne.Lock()
 	mock.calls.One = nil
+	lockIfaceMockOne.Unlock()
+	lockIfaceMockTwo.Lock()
 	mock.calls.Two = nil
+	lockIfaceMockTwo.Unlock()
 }
 
 // One calls OneFunc.
@@ -77,6 +81,13 @@ func (mock *IfaceMock) One(str string, variadic ...string) (string, []string) {
 	mock.calls.One = append(mock.calls.One, callInfo)
 	lockIfaceMockOne.Unlock()
 	return mock.OneFunc(str, variadic...)
+}
+
+// OneCalled returns true if at least one call was made to One.
+func (mock *IfaceMock) OneCalled() bool {
+	lockIfaceMockOne.RLock()
+	defer lockIfaceMockOne.RUnlock()
+	return len(mock.calls.One) > 0
 }
 
 // OneCalls gets all the calls that were made to One.
@@ -112,6 +123,13 @@ func (mock *IfaceMock) Two(in1 int, in2 int) int {
 	mock.calls.Two = append(mock.calls.Two, callInfo)
 	lockIfaceMockTwo.Unlock()
 	return mock.TwoFunc(in1, in2)
+}
+
+// TwoCalled returns true if at least one call was made to Two.
+func (mock *IfaceMock) TwoCalled() bool {
+	lockIfaceMockTwo.RLock()
+	defer lockIfaceMockTwo.RUnlock()
+	return len(mock.calls.Two) > 0
 }
 
 // TwoCalls gets all the calls that were made to Two.

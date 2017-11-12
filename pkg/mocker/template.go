@@ -96,11 +96,6 @@ func (mock *{{$iface.Name}}Mock) {{.Name}}({{.ParamStr}}) {{.ReturnStr}} {
 
 // {{.Name}}Called returns true if at least one call was made to {{.Name}}.
 func (mock *{{$iface.Name}}Mock) {{.Name}}Called() bool {
-	var calls []struct {
-		{{- range .Params }}
-		{{ .Name | Export }} {{ .Type }}
-		{{- end }}
-	}
 	lock{{$iface.Name}}Mock{{.Name}}.RLock()
 	defer lock{{$iface.Name}}Mock{{.Name}}.RUnlock()
 	return len(mock.calls.{{.Name}}) > 0
