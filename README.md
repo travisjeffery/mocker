@@ -2,11 +2,11 @@
 
 mocker for go.
 
-## LICENSE 
+## License
 
 MIT
 
---- 
+---
 
 - [travisjeffery.com](http://travisjeffery.com)
 - GitHub [@travisjeffery](https://github.com/travisjeffery)

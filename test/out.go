@@ -55,6 +55,12 @@ type IfaceMock struct {
 	}
 }
 
+// Reset resets the calls made to the mocked APIs.
+func (mock *IfaceMock) Reset() {
+	mock.calls.One = nil
+	mock.calls.Two = nil
+}
+
 // One calls OneFunc.
 func (mock *IfaceMock) One(str string, variadic ...string) (string, []string) {
 	if mock.OneFunc == nil {

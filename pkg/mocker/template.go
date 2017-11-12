@@ -61,6 +61,12 @@ type {{.Name}}Mock struct {
 {{- end }}
 	}
 }
+// Reset resets the calls made to the mocked APIs.
+func (mock *{{$iface.Name}}Mock) Reset() {
+{{- range .Methods }}
+	mock.calls.{{.Name}} = nil
+{{- end }}
+}
 {{ range .Methods }}
 // {{.Name}} calls {{.Name}}Func.
 func (mock *{{$iface.Name}}Mock) {{.Name}}({{.ParamStr}}) {{.ReturnStr}} {

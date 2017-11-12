@@ -33,15 +33,12 @@ func TestIface(t *testing.T) {
 		},
 	}
 	for _, o := range ones {
-		actstr, actvariadic, acterr := iface.One(o.str, o.variadic...)
+		actstr, actvariadic := iface.One(o.str, o.variadic...)
 		if actstr != o.str {
 			t.Errorf("str = %v, want %v", actstr, o.str)
 		}
 		if !reflect.DeepEqual(actvariadic, o.variadic) {
 			t.Errorf("variadic = %v, want %v", actvariadic, o.variadic)
-		}
-		if acterr.Error() != o.err.Error() {
-			t.Errorf("acterr = %v, want %v", acterr.Error(), o.err.Error())
 		}
 	}
 	if len(iface.OneCalls()) != len(ones) {
@@ -50,5 +47,12 @@ func TestIface(t *testing.T) {
 	z := iface.Two(1, 2)
 	if z != 3 {
 		t.Errorf("z = %v, want %v", z, 3)
+	}
+	iface.Reset()
+	if len(iface.OneCalls()) != 0 {
+		t.Errorf("onecalls = %v, want %v", len(iface.OneCalls()), 0)
+	}
+	if len(iface.TwoCalls()) != 0 {
+		t.Errorf("twocalls = %v, want %v", len(iface.TwoCalls()), 0)
 	}
 }

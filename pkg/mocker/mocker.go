@@ -91,7 +91,6 @@ func (m *mocker) Mock() error {
 	if err := tmpl.Execute(&buf, f); err != nil {
 		return errors.Wrap(err, "mocker: failed to execute template")
 	}
-	fmt.Println(buf.String())
 	fmted, err := format.Source(buf.Bytes())
 	if err != nil {
 		return errors.Wrap(err, "mocker: failed to format file")
