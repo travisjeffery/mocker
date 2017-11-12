@@ -12,10 +12,10 @@ import (
 )
 
 var (
-	out   = kingpin.Flag("out", "File to write mocks to").String()
-	pkg   = kingpin.Flag("pkg", "Name of package mocks will be in").String()
-	src   = kingpin.Arg("src", "Source to find interfaces").String()
-	iface = kingpin.Arg("iface", "Interfaces to mock").Strings()
+	out   = kingpin.Flag("out", "File to write mocks to. Stdout by default.").String()
+	pkg   = kingpin.Flag("pkg", "Name of package for mocks. Inferred by default.").String()
+	src   = kingpin.Arg("src", "Directory to find interfaces.").Required().String()
+	iface = kingpin.Arg("ifaces", "Interfaces to mock.").Required().Strings()
 )
 
 func main() {

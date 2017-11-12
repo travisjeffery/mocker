@@ -27,12 +27,10 @@ func (i *importer) Import(path string) (*types.Package, error) {
 		if err != nil {
 			return nil, errors.Wrap(err, "importer: failed to get path")
 		}
-		// TODO: strip gopath
 	}
 	if pkg, ok := i.pkgs[path]; ok {
 		return pkg, nil
 	}
-	// TODO: check pkg
 	pkg, err := i.pkg(path)
 	if err != nil {
 		return nil, errors.Wrap(err, "importer: failed to read pkg")

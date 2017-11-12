@@ -38,7 +38,7 @@ func (m *mocker) Mock() error {
 	if err != nil {
 		return errors.Wrap(err, "mock: failed to parse src dir")
 	}
-	if m.pkg != nil {
+	if m.pkg == nil {
 		for pkg := range pkgs {
 			if strings.Contains(pkg, "_test") {
 				continue
@@ -51,7 +51,6 @@ func (m *mocker) Mock() error {
 	if err != nil {
 		return errors.Wrap(err, "mocker: failed to parse template")
 	}
-	// TODO imports
 	f := file{Pkg: *m.pkg, Imports: []string{"sync"}}
 	for _, pkg := range pkgs {
 		i := 0
@@ -177,9 +176,6 @@ func (m *mocker) params(sig *types.Signature, tuple *types.Tuple, format string)
 	var params []param
 	typeq := func(pkg *types.Package) string {
 		path := pkg.Path()
-		if path == "." {
-			// TODO
-		}
 		m.imports[path] = true
 		return pkg.Name()
 	}
