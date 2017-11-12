@@ -60,7 +60,7 @@ func (m *mocker) Mock() error {
 			files[i] = f
 			i++
 		}
-		cfg := types.Config{Error: func(err error) { fmt.Println("err", err) }, Importer: &importer{src: *m.src, pkgs: make(map[string]*types.Package), base: goimporter.Default()}}
+		cfg := types.Config{Importer: &importer{src: *m.src, pkgs: make(map[string]*types.Package), base: goimporter.Default()}}
 		tpkg, err := cfg.Check(*m.src, fset, files, nil)
 		if err != nil {
 			return errors.Wrap(err, "mocker: failed to type check pkg")
@@ -180,7 +180,7 @@ func (m *mocker) params(sig *types.Signature, tuple *types.Tuple, format string)
 		if path == "." {
 			// TODO
 		}
-		m.imports[pkg.Name()] = true
+		m.imports[path] = true
 		return pkg.Name()
 	}
 	for i := 0; i < tuple.Len(); i++ {
