@@ -23,7 +23,7 @@ Args:
   <ifaces>  Interfaces to mock.
 ```
 
-Example:
+## Example
 
 Your interface:
 
@@ -37,9 +37,13 @@ type UserService interface {
 }
 ```
 
+Generate the mock:
+
 ```
 $ mocker --out mock/user_service_mock.go --pkg mock . UserService
 ```
+
+Use in your tests:
 
 ``` go
 // test_endpoint.go
