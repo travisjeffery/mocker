@@ -64,7 +64,9 @@ type {{.Name}}Mock struct {
 // Reset resets the calls made to the mocked APIs.
 func (mock *{{$iface.Name}}Mock) Reset() {
 {{- range .Methods }}
+	lock{{$iface.Name}}Mock{{.Name}}.Lock()
 	mock.calls.{{.Name}} = nil
+	lock{{$iface.Name}}Mock{{.Name}}.Unlock()
 {{- end }}
 }
 {{ range .Methods }}
@@ -90,6 +92,18 @@ func (mock *{{$iface.Name}}Mock) {{.Name}}({{.ParamStr}}) {{.ReturnStr}} {
 {{- else }}
 	mock.{{.Name}}Func({{.CallStr}})
 {{- end }}
+}
+
+// {{.Name}}Called returns true if at least one call was made to {{.Name}}.
+func (mock *{{$iface.Name}}Mock) {{.Name}}Called() bool {
+	var calls []struct {
+		{{- range .Params }}
+		{{ .Name | Export }} {{ .Type }}
+		{{- end }}
+	}
+	lock{{$iface.Name}}Mock{{.Name}}.RLock()
+	defer lock{{$iface.Name}}Mock{{.Name}}.RUnlock()
+	return len(mock.calls.{{.Name}}) > 0
 }
 // {{.Name}}Calls gets all the calls that were made to {{.Name}}.
 // Check the length with:
