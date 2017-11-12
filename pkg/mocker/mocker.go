@@ -38,7 +38,7 @@ func (m *mocker) Mock() error {
 	if err != nil {
 		return errors.Wrap(err, "mock: failed to parse src dir")
 	}
-	if m.pkg == nil {
+	if *m.pkg == "" {
 		for pkg := range pkgs {
 			if strings.Contains(pkg, "_test") {
 				continue
@@ -175,7 +175,17 @@ func (p param) ReturnStr() string {
 func (m *mocker) params(sig *types.Signature, tuple *types.Tuple, format string) []param {
 	var params []param
 	typeq := func(pkg *types.Package) string {
+		if *m.pkg == pkg.Name() {
+			return ""
+		}
 		path := pkg.Path()
+		if path == "." {
+			wd, err := os.Getwd()
+			if err != nil {
+				return ""
+			}
+			path = strings.TrimPrefix(wd, os.Getenv("GOPATH")+"/src/")
+		}
 		m.imports[path] = true
 		return pkg.Name()
 	}
