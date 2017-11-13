@@ -65,6 +65,25 @@ func TestUserServiceEndpoint(t *testing.T) {
 }
 ```
 
+## API
+
+For each method in the interface, the generated mock struct has methods:
+
+- `__METHOD__(args...) (returns...)`
+  Your mocked API which calls the func you instantiated the mock with.
+
+- `__METHOD__Called() bool`
+  Returns true if the mocked API was called at least once.
+
+- `__METHOD__Calls() []struct{{args...}}`
+  Returns a slice of structs, one struct per call, the struct containing the
+  args of the call.
+
+Finally one method to reset all calls on the mock:
+
+- `Reset()`
+  Resets the calls made to the mocked APIs.
+
 ## License
 
 MIT
