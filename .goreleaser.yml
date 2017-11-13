@@ -7,3 +7,19 @@ builds:
       - linux
     goarch:
       - amd64
+
+brew:
+  github:
+    owner: travisjeffery
+    name: homebrew-tap
+
+  commit_author:
+    name: travisjeffery
+    email: tj@travisjeffery.com
+
+  folder: Formula
+
+  homepage: "https://github.com/travisjeffery"
+
+  description: "Mocker for Go."
+
