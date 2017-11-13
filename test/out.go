@@ -7,16 +7,16 @@ import (
 )
 
 var (
-	lockIfaceMockOne sync.RWMutex
-	lockIfaceMockTwo sync.RWMutex
+	lockMockIfaceOne sync.RWMutex
+	lockMockIfaceTwo sync.RWMutex
 )
 
-// IfaceMock is a mock implementation of Iface.
+// MockIface is a mock implementation of Iface.
 //
 //     func TestSomethingThatUsesIface(t *testing.T) {
 //
 //         // make and configure a mocked Iface
-//         mockedIface := &IfaceMock{
+//         mockedIface := &MockIface{
 //             OneFunc: func(str string,variadic ...string) (string, []string) {
 // 	               panic("TODO: mock out the One method")
 //             },
@@ -29,7 +29,7 @@ var (
 //         //       and then make assertions.
 //
 //     }
-type IfaceMock struct {
+type MockIface struct {
 	// OneFunc mocks the One method.
 	OneFunc func(str string, variadic ...string) (string, []string)
 
@@ -56,19 +56,19 @@ type IfaceMock struct {
 }
 
 // Reset resets the calls made to the mocked APIs.
-func (mock *IfaceMock) Reset() {
-	lockIfaceMockOne.Lock()
+func (mock *MockIface) Reset() {
+	lockMockIfaceOne.Lock()
 	mock.calls.One = nil
-	lockIfaceMockOne.Unlock()
-	lockIfaceMockTwo.Lock()
+	lockMockIfaceOne.Unlock()
+	lockMockIfaceTwo.Lock()
 	mock.calls.Two = nil
-	lockIfaceMockTwo.Unlock()
+	lockMockIfaceTwo.Unlock()
 }
 
 // One calls OneFunc.
-func (mock *IfaceMock) One(str string, variadic ...string) (string, []string) {
+func (mock *MockIface) One(str string, variadic ...string) (string, []string) {
 	if mock.OneFunc == nil {
-		panic("moq: IfaceMock.OneFunc is nil but Iface.One was just called")
+		panic("moq: MockIface.OneFunc is nil but Iface.One was just called")
 	}
 	callInfo := struct {
 		Str      string
@@ -77,23 +77,23 @@ func (mock *IfaceMock) One(str string, variadic ...string) (string, []string) {
 		Str:      str,
 		Variadic: variadic,
 	}
-	lockIfaceMockOne.Lock()
+	lockMockIfaceOne.Lock()
 	mock.calls.One = append(mock.calls.One, callInfo)
-	lockIfaceMockOne.Unlock()
+	lockMockIfaceOne.Unlock()
 	return mock.OneFunc(str, variadic...)
 }
 
 // OneCalled returns true if at least one call was made to One.
-func (mock *IfaceMock) OneCalled() bool {
-	lockIfaceMockOne.RLock()
-	defer lockIfaceMockOne.RUnlock()
+func (mock *MockIface) OneCalled() bool {
+	lockMockIfaceOne.RLock()
+	defer lockMockIfaceOne.RUnlock()
 	return len(mock.calls.One) > 0
 }
 
 // OneCalls gets all the calls that were made to One.
 // Check the length with:
 //     len(mockedIface.OneCalls())
-func (mock *IfaceMock) OneCalls() []struct {
+func (mock *MockIface) OneCalls() []struct {
 	Str      string
 	Variadic []string
 } {
@@ -101,16 +101,16 @@ func (mock *IfaceMock) OneCalls() []struct {
 		Str      string
 		Variadic []string
 	}
-	lockIfaceMockOne.RLock()
+	lockMockIfaceOne.RLock()
 	calls = mock.calls.One
-	lockIfaceMockOne.RUnlock()
+	lockMockIfaceOne.RUnlock()
 	return calls
 }
 
 // Two calls TwoFunc.
-func (mock *IfaceMock) Two(in1 int, in2 int) int {
+func (mock *MockIface) Two(in1 int, in2 int) int {
 	if mock.TwoFunc == nil {
-		panic("moq: IfaceMock.TwoFunc is nil but Iface.Two was just called")
+		panic("moq: MockIface.TwoFunc is nil but Iface.Two was just called")
 	}
 	callInfo := struct {
 		In1 int
@@ -119,23 +119,23 @@ func (mock *IfaceMock) Two(in1 int, in2 int) int {
 		In1: in1,
 		In2: in2,
 	}
-	lockIfaceMockTwo.Lock()
+	lockMockIfaceTwo.Lock()
 	mock.calls.Two = append(mock.calls.Two, callInfo)
-	lockIfaceMockTwo.Unlock()
+	lockMockIfaceTwo.Unlock()
 	return mock.TwoFunc(in1, in2)
 }
 
 // TwoCalled returns true if at least one call was made to Two.
-func (mock *IfaceMock) TwoCalled() bool {
-	lockIfaceMockTwo.RLock()
-	defer lockIfaceMockTwo.RUnlock()
+func (mock *MockIface) TwoCalled() bool {
+	lockMockIfaceTwo.RLock()
+	defer lockMockIfaceTwo.RUnlock()
 	return len(mock.calls.Two) > 0
 }
 
 // TwoCalls gets all the calls that were made to Two.
 // Check the length with:
 //     len(mockedIface.TwoCalls())
-func (mock *IfaceMock) TwoCalls() []struct {
+func (mock *MockIface) TwoCalls() []struct {
 	In1 int
 	In2 int
 } {
@@ -143,8 +143,8 @@ func (mock *IfaceMock) TwoCalls() []struct {
 		In1 int
 		In2 int
 	}
-	lockIfaceMockTwo.RLock()
+	lockMockIfaceTwo.RLock()
 	calls = mock.calls.Two
-	lockIfaceMockTwo.RUnlock()
+	lockMockIfaceTwo.RUnlock()
 	return calls
 }

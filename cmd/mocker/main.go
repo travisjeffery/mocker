@@ -12,10 +12,12 @@ import (
 )
 
 var (
-	out   = kingpin.Flag("out", "File to write mocks to. Stdout by default.").String()
-	pkg   = kingpin.Flag("pkg", "Name of package for mocks. Inferred by default.").String()
-	src   = kingpin.Arg("src", "Directory to find interfaces.").Required().String()
-	iface = kingpin.Arg("ifaces", "Interfaces to mock.").Required().Strings()
+	out    = kingpin.Flag("out", "File to write mocks to. Stdout by default.").String()
+	pkg    = kingpin.Flag("pkg", "Name of package for mocks. Inferred by default.").String()
+	src    = kingpin.Arg("src", "Directory to find interfaces.").Required().String()
+	iface  = kingpin.Arg("ifaces", "Interfaces to mock.").Required().Strings()
+	prefix = kingpin.Flag("prefix", "Prefix for mocks.").Default("Mock").String()
+	suffix = kingpin.Flag("suffix", "Suffix for mocks.").String()
 )
 
 func main() {
@@ -29,7 +31,7 @@ func main() {
 		w = &buf
 	}
 
-	m, err := mocker.New(src, pkg, iface, w)
+	m, err := mocker.New(src, pkg, iface, prefix, suffix, w)
 	if err != nil {
 		log.Fatal("failed to instantiate mocker")
 	}

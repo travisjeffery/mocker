@@ -18,15 +18,17 @@ import (
 )
 
 type mocker struct {
+	w       io.Writer
 	src     *string
 	pkg     *string
 	iface   *[]string
+	prefix  *string
+	suffix  *string
 	imports map[string]bool
-	w       io.Writer
 }
 
-func New(src *string, pkg *string, iface *[]string, w io.Writer) (*mocker, error) {
-	return &mocker{src, pkg, iface, make(map[string]bool), w}, nil
+func New(src *string, pkg *string, iface *[]string, prefix, suffix *string, w io.Writer) (*mocker, error) {
+	return &mocker{w, src, pkg, iface, prefix, suffix, make(map[string]bool)}, nil
 }
 
 func (m *mocker) Mock() error {
@@ -73,7 +75,7 @@ func (m *mocker) Mock() error {
 				return fmt.Errorf("mocker: not an interface %s", i)
 			}
 			tiface := ifaceobj.Type().Underlying().(*types.Interface).Complete()
-			iface := iface{Name: i}
+			iface := iface{Name: i, Suffix: *m.suffix, Prefix: *m.prefix}
 			for i := 0; i < tiface.NumMethods(); i++ {
 				met := tiface.Method(i)
 				sig := met.Type().(*types.Signature)
@@ -108,6 +110,8 @@ type file struct {
 
 type iface struct {
 	Name    string
+	Prefix  string
+	Suffix  string
 	Methods []method
 }
 

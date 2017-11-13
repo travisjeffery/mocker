@@ -7,7 +7,7 @@ import (
 )
 
 func TestIface(t *testing.T) {
-	iface := &IfaceMock{
+	iface := &MockIface{
 		OneFunc: func(str string, variadic ...string) (string, []string) {
 			return str, variadic
 		},

@@ -25,15 +25,15 @@ import (
 {{ range $i, $iface := .Ifaces -}}
 var (
 {{- range .Methods }}
-	lock{{$iface.Name}}Mock{{.Name}}	sync.RWMutex
+	lock{{$iface.Prefix}}{{$iface.Name}}{{$iface.Suffix}}{{.Name}}	sync.RWMutex
 {{- end }}
 )
-// {{.Name}}Mock is a mock implementation of {{.Name}}.
+// {{.Prefix}}{{.Name}}{{.Suffix}} is a mock implementation of {{.Name}}.
 //
 //     func TestSomethingThatUses{{.Name}}(t *testing.T) {
 //
 //         // make and configure a mocked {{.Name}}
-//         mocked{{.Name}} := &{{.Name}}Mock{ {{ range .Methods }}
+//         mocked{{.Name}} := &{{.Prefix}}{{.Name}}{{.Suffix}}{ {{ range .Methods }}
 //             {{.Name}}Func: func({{ .ParamStr }}) {{.ReturnStr}} {
 // 	               panic("TODO: mock out the {{.Name}} method")
 //             },{{- end }}
@@ -43,7 +43,7 @@ var (
 //         //       and then make assertions.
 //
 //     }
-type {{.Name}}Mock struct {
+type {{.Prefix}}{{.Name}}{{.Suffix}} struct {
 {{- range .Methods }}
 	// {{.Name}}Func mocks the {{.Name}} method.
 	{{.Name}}Func func({{ .ParamStr }}) {{.ReturnStr}}
@@ -62,18 +62,18 @@ type {{.Name}}Mock struct {
 	}
 }
 // Reset resets the calls made to the mocked APIs.
-func (mock *{{$iface.Name}}Mock) Reset() {
+func (mock *{{$iface.Prefix}}{{$iface.Name}}{{$iface.Suffix}}) Reset() {
 {{- range .Methods }}
-	lock{{$iface.Name}}Mock{{.Name}}.Lock()
+	lock{{$iface.Prefix}}{{$iface.Name}}{{$iface.Suffix}}{{.Name}}.Lock()
 	mock.calls.{{.Name}} = nil
-	lock{{$iface.Name}}Mock{{.Name}}.Unlock()
+	lock{{$iface.Prefix}}{{$iface.Name}}{{$iface.Suffix}}{{.Name}}.Unlock()
 {{- end }}
 }
 {{ range .Methods }}
 // {{.Name}} calls {{.Name}}Func.
-func (mock *{{$iface.Name}}Mock) {{.Name}}({{.ParamStr}}) {{.ReturnStr}} {
+func (mock *{{$iface.Prefix}}{{$iface.Name}}{{$iface.Suffix}}) {{.Name}}({{.ParamStr}}) {{.ReturnStr}} {
 	if mock.{{.Name}}Func == nil {
-		panic("moq: {{$iface.Name}}Mock.{{.Name}}Func is nil but {{$iface.Name}}.{{.Name}} was just called")
+		panic("moq: {{$iface.Prefix}}{{$iface.Name}}{{$iface.Suffix}}.{{.Name}}Func is nil but {{$iface.Name}}.{{.Name}} was just called")
 	}
 	callInfo := struct {
 		{{- range .Params }}
@@ -84,9 +84,9 @@ func (mock *{{$iface.Name}}Mock) {{.Name}}({{.ParamStr}}) {{.ReturnStr}} {
 		{{ .Name | Export }}: {{ .Name }},
 		{{- end }}
 	}
-	lock{{$iface.Name}}Mock{{.Name}}.Lock()
+	lock{{$iface.Prefix}}{{$iface.Name}}{{$iface.Suffix}}{{.Name}}.Lock()
 	mock.calls.{{.Name}} = append(mock.calls.{{.Name}}, callInfo)
-	lock{{$iface.Name}}Mock{{.Name}}.Unlock()
+	lock{{$iface.Prefix}}{{$iface.Name}}{{$iface.Suffix}}{{.Name}}.Unlock()
 {{- if .ReturnStr }}
 	return mock.{{.Name}}Func({{.CallStr}})
 {{- else }}
@@ -95,15 +95,15 @@ func (mock *{{$iface.Name}}Mock) {{.Name}}({{.ParamStr}}) {{.ReturnStr}} {
 }
 
 // {{.Name}}Called returns true if at least one call was made to {{.Name}}.
-func (mock *{{$iface.Name}}Mock) {{.Name}}Called() bool {
-	lock{{$iface.Name}}Mock{{.Name}}.RLock()
-	defer lock{{$iface.Name}}Mock{{.Name}}.RUnlock()
+func (mock *{{$iface.Prefix}}{{$iface.Name}}{{$iface.Suffix}}) {{.Name}}Called() bool {
+	lock{{$iface.Prefix}}{{$iface.Name}}{{$iface.Suffix}}{{.Name}}.RLock()
+	defer lock{{$iface.Prefix}}{{$iface.Name}}{{$iface.Suffix}}{{.Name}}.RUnlock()
 	return len(mock.calls.{{.Name}}) > 0
 }
 // {{.Name}}Calls gets all the calls that were made to {{.Name}}.
 // Check the length with:
 //     len(mocked{{$iface.Name}}.{{.Name}}Calls())
-func (mock *{{$iface.Name}}Mock) {{.Name}}Calls() []struct {
+func (mock *{{$iface.Prefix}}{{$iface.Name}}{{$iface.Suffix}}) {{.Name}}Calls() []struct {
 		{{- range .Params }}
 		{{ .Name | Export }} {{ .Type }}
 		{{- end }}
@@ -113,9 +113,9 @@ func (mock *{{$iface.Name}}Mock) {{.Name}}Calls() []struct {
 		{{ .Name | Export }} {{ .Type }}
 		{{- end }}
 	}
-	lock{{$iface.Name}}Mock{{.Name}}.RLock()
+	lock{{$iface.Prefix}}{{$iface.Name}}{{$iface.Suffix}}{{.Name}}.RLock()
 	calls = mock.calls.{{.Name}}
-	lock{{$iface.Name}}Mock{{.Name}}.RUnlock()
+	lock{{$iface.Prefix}}{{$iface.Name}}{{$iface.Suffix}}{{.Name}}.RUnlock()
 	return calls
 }
 {{ end -}}
