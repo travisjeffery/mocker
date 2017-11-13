@@ -33,7 +33,7 @@ Your interface:
 package user
 
 type UserService interface {
-  Get(id string) (*User, error)
+    Get(id string) (*User, error)
 }
 ```
 
@@ -51,17 +51,17 @@ Use in your tests:
 package test_endpoint
 
 func TestUserServiceEndpoint(t *testing.T) {
-  us := &mock.UserService{
-    GetUserFunc: func(id string) (*user.User, error) {
-      return &User{ID: id}, nil
-    },
-  }
-  ep := endpoint.Endpoint{UserService: us}
-  resp, err := ep.GetUser(endpoint.GetUserRequest{ID: "travisjeffery"})
-  // ...
-  if !us.GetUserCalled() {
-    t.Error("expected endpoint to call GetUser")
-  }
+    us := &mock.UserService{
+        GetUserFunc: func(id string) (*user.User, error) {
+            return &User{ID: id}, nil
+        },
+    }
+    ep := endpoint.Endpoint{UserService: us}
+    resp, err := ep.GetUser(endpoint.GetUserRequest{ID: "travisjeffery"})
+    // ...
+    if !us.GetUserCalled() {
+        t.Error("expected endpoint to call GetUser")
+    }
 }
 ```
 

@@ -1,0 +1,9 @@
+builds:
+  - main: cmd/mocker/main.go
+    binary: mocker
+    goos:
+      - windows
+      - darwin
+      - linux
+    goarch:
+      - amd64
