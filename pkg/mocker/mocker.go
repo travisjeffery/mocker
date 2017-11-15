@@ -183,12 +183,14 @@ func (m *mocker) params(sig *types.Signature, tuple *types.Tuple, format string)
 			return ""
 		}
 		path := pkg.Path()
+		wd, err := os.Getwd()
+		if err != nil {
+			return ""
+		}
 		if path == "." {
-			wd, err := os.Getwd()
-			if err != nil {
-				return ""
-			}
 			path = strings.TrimPrefix(wd, os.Getenv("GOPATH")+"/src/")
+		} else {
+			path = strings.TrimPrefix(path, strings.TrimPrefix(wd, os.Getenv("GOPATH")+"/src/")+"/vendor/")
 		}
 		m.imports[path] = true
 		return pkg.Name()
