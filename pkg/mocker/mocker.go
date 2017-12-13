@@ -24,11 +24,11 @@ type mocker struct {
 	iface   *[]string
 	prefix  *string
 	suffix  *string
-	imports map[string]bool
+	imports imports
 }
 
 func New(src *string, pkg *string, iface *[]string, prefix, suffix *string, w io.Writer) (*mocker, error) {
-	return &mocker{w, src, pkg, iface, prefix, suffix, make(map[string]bool)}, nil
+	return &mocker{w, src, pkg, iface, prefix, suffix, imports{make(map[string]iimport), make(map[string]iimport)}}, nil
 }
 
 func (m *mocker) Mock() error {
@@ -53,7 +53,7 @@ func (m *mocker) Mock() error {
 	if err != nil {
 		return errors.Wrap(err, "mocker: failed to parse template")
 	}
-	f := file{Pkg: *m.pkg, Imports: []string{"sync"}}
+	f := file{Pkg: *m.pkg, Imports: []iimport{{Path: "sync"}}}
 	for _, pkg := range pkgs {
 		i := 0
 		files := make([]*ast.File, len(pkg.Files))
@@ -65,6 +65,24 @@ func (m *mocker) Mock() error {
 		tpkg, err := cfg.Check(*m.src, fset, files, nil)
 		if err != nil {
 			return errors.Wrap(err, "mocker: failed to type check pkg")
+		}
+		for _, f := range files {
+			for _, d := range f.Decls {
+				gd, ok := d.(*ast.GenDecl)
+				if !ok {
+					continue
+				}
+				for _, s := range gd.Specs {
+					is, ok := s.(*ast.ImportSpec)
+					if !ok {
+						continue
+					}
+					if is.Name != nil {
+						i := iimport{Name: is.Name.Name, Path: strings.Replace(is.Path.Value, `"`, "", -1)}
+						m.imports.named[i.Path] = i
+					}
+				}
+			}
 		}
 		for _, i := range *m.iface {
 			ifaceobj := tpkg.Scope().Lookup(i)
@@ -85,7 +103,12 @@ func (m *mocker) Mock() error {
 			f.Ifaces = append(f.Ifaces, iface)
 		}
 	}
-	for pkg := range m.imports {
+	for p, n := range m.imports.named {
+		if _, ok := m.imports.all[p]; ok {
+			m.imports.all[p] = n
+		}
+	}
+	for _, pkg := range m.imports.all {
 		f.Imports = append(f.Imports, pkg)
 	}
 	var buf bytes.Buffer
@@ -105,7 +128,17 @@ func (m *mocker) Mock() error {
 type file struct {
 	Pkg     string
 	Ifaces  []iface
-	Imports []string
+	Imports []iimport
+}
+
+type imports struct {
+	all   map[string]iimport
+	named map[string]iimport
+}
+
+type iimport struct {
+	Path string
+	Name string
 }
 
 type iface struct {
@@ -192,8 +225,12 @@ func (m *mocker) params(sig *types.Signature, tuple *types.Tuple, format string)
 		} else {
 			path = strings.TrimPrefix(path, strings.TrimPrefix(wd, os.Getenv("GOPATH")+"/src/")+"/vendor/")
 		}
-		m.imports[path] = true
-		return pkg.Name()
+		name := pkg.Name()
+		if i, ok := m.imports.named[path]; ok {
+			name = i.Name
+		}
+		m.imports.all[path] = iimport{Name: name, Path: path}
+		return name
 	}
 	for i := 0; i < tuple.Len(); i++ {
 		v := tuple.At(i)
