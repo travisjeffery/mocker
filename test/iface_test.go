@@ -8,6 +8,7 @@ import (
 
 	av1 "github.com/travisjeffery/mocker/test/a"
 	bv1 "github.com/travisjeffery/mocker/test/b"
+	"github.com/travisjeffery/mocker/test/c"
 )
 
 func TestIface(t *testing.T) {
@@ -20,6 +21,8 @@ func TestIface(t *testing.T) {
 		},
 		ThreeFunc: func(x av1.Int) bv1.Str {
 			return bv1.Str(strconv.Itoa(int(x)))
+		},
+		FourFunc: func(x c.Int) {
 		},
 	}
 	type one struct {

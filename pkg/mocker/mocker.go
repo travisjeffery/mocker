@@ -228,8 +228,10 @@ func (m *mocker) params(sig *types.Signature, tuple *types.Tuple, format string)
 		name := pkg.Name()
 		if i, ok := m.imports.named[path]; ok {
 			name = i.Name
+			m.imports.all[path] = iimport{Name: name, Path: path}
+		} else {
+			m.imports.all[path] = iimport{Path: path}
 		}
-		m.imports.all[path] = iimport{Name: name, Path: path}
 		return name
 	}
 	for i := 0; i < tuple.Len(); i++ {

@@ -5,10 +5,12 @@ package test
 import (
 	av1 "github.com/travisjeffery/mocker/test/a"
 	bv1 "github.com/travisjeffery/mocker/test/b"
+	"github.com/travisjeffery/mocker/test/c"
 	"sync"
 )
 
 var (
+	lockMockIfaceFour  sync.RWMutex
 	lockMockIfaceOne   sync.RWMutex
 	lockMockIfaceThree sync.RWMutex
 	lockMockIfaceTwo   sync.RWMutex
@@ -20,6 +22,9 @@ var (
 //
 //         // make and configure a mocked Iface
 //         mockedIface := &MockIface{
+//             FourFunc: func(in1 c.Int)  {
+// 	               panic("TODO: mock out the Four method")
+//             },
 //             OneFunc: func(str string,variadic ...string) (string, []string) {
 // 	               panic("TODO: mock out the One method")
 //             },
@@ -36,6 +41,9 @@ var (
 //
 //     }
 type MockIface struct {
+	// FourFunc mocks the Four method.
+	FourFunc func(in1 c.Int)
+
 	// OneFunc mocks the One method.
 	OneFunc func(str string, variadic ...string) (string, []string)
 
@@ -47,6 +55,11 @@ type MockIface struct {
 
 	// calls tracks calls to the methods.
 	calls struct {
+		// Four holds details about calls to the Four method.
+		Four []struct {
+			// In1 is the in1 argument value.
+			In1 c.Int
+		}
 		// One holds details about calls to the One method.
 		One []struct {
 			// Str is the str argument value.
@@ -71,6 +84,9 @@ type MockIface struct {
 
 // Reset resets the calls made to the mocked APIs.
 func (mock *MockIface) Reset() {
+	lockMockIfaceFour.Lock()
+	mock.calls.Four = nil
+	lockMockIfaceFour.Unlock()
 	lockMockIfaceOne.Lock()
 	mock.calls.One = nil
 	lockMockIfaceOne.Unlock()
@@ -80,6 +96,44 @@ func (mock *MockIface) Reset() {
 	lockMockIfaceTwo.Lock()
 	mock.calls.Two = nil
 	lockMockIfaceTwo.Unlock()
+}
+
+// Four calls FourFunc.
+func (mock *MockIface) Four(in1 c.Int) {
+	if mock.FourFunc == nil {
+		panic("moq: MockIface.FourFunc is nil but Iface.Four was just called")
+	}
+	callInfo := struct {
+		In1 c.Int
+	}{
+		In1: in1,
+	}
+	lockMockIfaceFour.Lock()
+	mock.calls.Four = append(mock.calls.Four, callInfo)
+	lockMockIfaceFour.Unlock()
+	mock.FourFunc(in1)
+}
+
+// FourCalled returns true if at least one call was made to Four.
+func (mock *MockIface) FourCalled() bool {
+	lockMockIfaceFour.RLock()
+	defer lockMockIfaceFour.RUnlock()
+	return len(mock.calls.Four) > 0
+}
+
+// FourCalls gets all the calls that were made to Four.
+// Check the length with:
+//     len(mockedIface.FourCalls())
+func (mock *MockIface) FourCalls() []struct {
+	In1 c.Int
+} {
+	var calls []struct {
+		In1 c.Int
+	}
+	lockMockIfaceFour.RLock()
+	calls = mock.calls.Four
+	lockMockIfaceFour.RUnlock()
+	return calls
 }
 
 // One calls OneFunc.
