@@ -3,7 +3,11 @@ package test
 import (
 	"fmt"
 	"reflect"
+	"strconv"
 	"testing"
+
+	av1 "github.com/travisjeffery/mocker/test/a"
+	bv1 "github.com/travisjeffery/mocker/test/b"
 )
 
 func TestIface(t *testing.T) {
@@ -13,6 +17,9 @@ func TestIface(t *testing.T) {
 		},
 		TwoFunc: func(x, y int) int {
 			return x + y
+		},
+		ThreeFunc: func(x av1.Int) bv1.Str {
+			return bv1.Str(strconv.Itoa(int(x)))
 		},
 	}
 	type one struct {
@@ -60,5 +67,8 @@ func TestIface(t *testing.T) {
 	}
 	if iface.OneCalled() {
 		t.Errorf("OneCalled() = %v, want %v", iface.OneCalled(), false)
+	}
+	if iface.Three(av1.Int(1)) != bv1.Str("1") {
+		t.Errorf("Three(): got = %v, want = %v", iface.Three(av1.Int(1)), "1")
 	}
 }

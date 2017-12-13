@@ -3,12 +3,15 @@
 package test
 
 import (
+	av1 "github.com/travisjeffery/mocker/test/a"
+	bv1 "github.com/travisjeffery/mocker/test/b"
 	"sync"
 )
 
 var (
-	lockMockIfaceOne sync.RWMutex
-	lockMockIfaceTwo sync.RWMutex
+	lockMockIfaceOne   sync.RWMutex
+	lockMockIfaceThree sync.RWMutex
+	lockMockIfaceTwo   sync.RWMutex
 )
 
 // MockIface is a mock implementation of Iface.
@@ -19,6 +22,9 @@ var (
 //         mockedIface := &MockIface{
 //             OneFunc: func(str string,variadic ...string) (string, []string) {
 // 	               panic("TODO: mock out the One method")
+//             },
+//             ThreeFunc: func(in1 av1.Int) bv1.Str {
+// 	               panic("TODO: mock out the Three method")
 //             },
 //             TwoFunc: func(in1 int,in2 int) int {
 // 	               panic("TODO: mock out the Two method")
@@ -33,6 +39,9 @@ type MockIface struct {
 	// OneFunc mocks the One method.
 	OneFunc func(str string, variadic ...string) (string, []string)
 
+	// ThreeFunc mocks the Three method.
+	ThreeFunc func(in1 av1.Int) bv1.Str
+
 	// TwoFunc mocks the Two method.
 	TwoFunc func(in1 int, in2 int) int
 
@@ -44,6 +53,11 @@ type MockIface struct {
 			Str string
 			// Variadic is the variadic argument value.
 			Variadic []string
+		}
+		// Three holds details about calls to the Three method.
+		Three []struct {
+			// In1 is the in1 argument value.
+			In1 av1.Int
 		}
 		// Two holds details about calls to the Two method.
 		Two []struct {
@@ -60,6 +74,9 @@ func (mock *MockIface) Reset() {
 	lockMockIfaceOne.Lock()
 	mock.calls.One = nil
 	lockMockIfaceOne.Unlock()
+	lockMockIfaceThree.Lock()
+	mock.calls.Three = nil
+	lockMockIfaceThree.Unlock()
 	lockMockIfaceTwo.Lock()
 	mock.calls.Two = nil
 	lockMockIfaceTwo.Unlock()
@@ -104,6 +121,44 @@ func (mock *MockIface) OneCalls() []struct {
 	lockMockIfaceOne.RLock()
 	calls = mock.calls.One
 	lockMockIfaceOne.RUnlock()
+	return calls
+}
+
+// Three calls ThreeFunc.
+func (mock *MockIface) Three(in1 av1.Int) bv1.Str {
+	if mock.ThreeFunc == nil {
+		panic("moq: MockIface.ThreeFunc is nil but Iface.Three was just called")
+	}
+	callInfo := struct {
+		In1 av1.Int
+	}{
+		In1: in1,
+	}
+	lockMockIfaceThree.Lock()
+	mock.calls.Three = append(mock.calls.Three, callInfo)
+	lockMockIfaceThree.Unlock()
+	return mock.ThreeFunc(in1)
+}
+
+// ThreeCalled returns true if at least one call was made to Three.
+func (mock *MockIface) ThreeCalled() bool {
+	lockMockIfaceThree.RLock()
+	defer lockMockIfaceThree.RUnlock()
+	return len(mock.calls.Three) > 0
+}
+
+// ThreeCalls gets all the calls that were made to Three.
+// Check the length with:
+//     len(mockedIface.ThreeCalls())
+func (mock *MockIface) ThreeCalls() []struct {
+	In1 av1.Int
+} {
+	var calls []struct {
+		In1 av1.Int
+	}
+	lockMockIfaceThree.RLock()
+	calls = mock.calls.Three
+	lockMockIfaceThree.RUnlock()
 	return calls
 }
 
