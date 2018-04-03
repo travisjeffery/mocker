@@ -3,18 +3,18 @@ package mocker
 import (
 	"bytes"
 	"fmt"
-	"go/ast"
 	"go/format"
-	goimporter "go/importer"
 	"go/parser"
 	"go/token"
 	"go/types"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 	"text/template"
 
 	"github.com/pkg/errors"
+	"golang.org/x/tools/go/loader"
 )
 
 type mocker struct {
@@ -51,57 +51,31 @@ func (m *mocker) Mock() error {
 	}
 	tmpl, err := template.New("mocker").Funcs(tmplFns).Parse(tmpl)
 	if err != nil {
-		return errors.Wrap(err, "mocker: failed to parse template")
+		return errors.Wrap(err, "failed to parse template")
 	}
 	f := file{Pkg: *m.pkg, Imports: []iimport{{Path: "sync"}}}
-	for _, pkg := range pkgs {
-		i := 0
-		files := make([]*ast.File, len(pkg.Files))
-		for _, f := range pkg.Files {
-			files[i] = f
-			i++
+
+	pkgInfo, err := m.pkgInfo(*m.src)
+	if err != nil {
+		return errors.Wrap(err, "failed to get pkg info")
+	}
+	for _, n := range *m.iface {
+		ifaceobj := pkgInfo.Pkg.Scope().Lookup(n)
+		if ifaceobj == nil {
+			return fmt.Errorf("failed to find interface: %s", n)
 		}
-		cfg := types.Config{Importer: &importer{src: *m.src, pkgs: make(map[string]*types.Package), base: goimporter.Default()}}
-		tpkg, err := cfg.Check(*m.src, fset, files, nil)
-		if err != nil {
-			return errors.Wrap(err, "mocker: failed to type check pkg")
+		if !types.IsInterface(ifaceobj.Type()) {
+			return errors.Wrap(err, fmt.Sprintf("%s (%s) is not an interface", n, ifaceobj.Type().String()))
 		}
-		for _, f := range files {
-			for _, d := range f.Decls {
-				gd, ok := d.(*ast.GenDecl)
-				if !ok {
-					continue
-				}
-				for _, s := range gd.Specs {
-					is, ok := s.(*ast.ImportSpec)
-					if !ok {
-						continue
-					}
-					if is.Name != nil {
-						i := iimport{Name: is.Name.Name, Path: strings.Replace(is.Path.Value, `"`, "", -1)}
-						m.imports.named[i.Path] = i
-					}
-				}
-			}
+		iiface := ifaceobj.Type().Underlying().(*types.Interface).Complete()
+		iface := iface{Name: n, Suffix: *m.suffix, Prefix: *m.prefix}
+		for i := 0; i < iiface.NumMethods(); i++ {
+			met := iiface.Method(i)
+			sig := met.Type().(*types.Signature)
+			m := method{Name: met.Name(), Params: m.params(sig, sig.Params(), "in%d"), Returns: m.params(sig, sig.Results(), "out%d")}
+			iface.Methods = append(iface.Methods, m)
 		}
-		for _, i := range *m.iface {
-			ifaceobj := tpkg.Scope().Lookup(i)
-			if ifaceobj == nil {
-				return fmt.Errorf("mocker: failed to find interface %s", i)
-			}
-			if !types.IsInterface(ifaceobj.Type()) {
-				return fmt.Errorf("mocker: not an interface %s", i)
-			}
-			tiface := ifaceobj.Type().Underlying().(*types.Interface).Complete()
-			iface := iface{Name: i, Suffix: *m.suffix, Prefix: *m.prefix}
-			for i := 0; i < tiface.NumMethods(); i++ {
-				met := tiface.Method(i)
-				sig := met.Type().(*types.Signature)
-				m := method{Name: met.Name(), Params: m.params(sig, sig.Params(), "in%d"), Returns: m.params(sig, sig.Results(), "out%d")}
-				iface.Methods = append(iface.Methods, m)
-			}
-			f.Ifaces = append(f.Ifaces, iface)
-		}
+		f.Ifaces = append(f.Ifaces, iface)
 	}
 	for p, n := range m.imports.named {
 		if _, ok := m.imports.all[p]; ok {
@@ -113,14 +87,14 @@ func (m *mocker) Mock() error {
 	}
 	var buf bytes.Buffer
 	if err := tmpl.Execute(&buf, f); err != nil {
-		return errors.Wrap(err, "mocker: failed to execute template")
+		return errors.Wrap(err, "failed to execute template")
 	}
 	fmted, err := format.Source(buf.Bytes())
 	if err != nil {
-		return errors.Wrap(err, "mocker: failed to format file")
+		return errors.Wrap(err, "failed to format file")
 	}
 	if _, err := m.w.Write(fmted); err != nil {
-		return errors.Wrap(err, "mocker: failed to write file")
+		return errors.Wrap(err, "failed to write file")
 	}
 	return nil
 }
@@ -246,4 +220,33 @@ func (m *mocker) params(sig *types.Signature, tuple *types.Tuple, format string)
 
 	}
 	return params
+}
+
+func (m *mocker) pkgInfo(src string) (*loader.PackageInfo, error) {
+	abs, err := filepath.Abs(src)
+	if err != nil {
+		return nil, errors.Wrap(err, "faild to get abs src path")
+	}
+	pkgPath := m.strip(abs)
+	conf := loader.Config{
+		ParserMode: parser.SpuriousErrors,
+		Cwd:        src,
+	}
+	conf.Import(pkgPath)
+	loader, err := conf.Load()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to load program")
+	}
+	pkgInfo := loader.Package(pkgPath)
+	if pkgInfo == nil {
+		return nil, errors.New("unable to load package")
+	}
+	return pkgInfo, nil
+}
+
+func (m *mocker) strip(pkg string) string {
+	for _, path := range strings.Split(os.Getenv("GOPATH"), string(filepath.ListSeparator)) {
+		pkg = strings.TrimPrefix(pkg, filepath.Join(path, "src")+"/")
+	}
+	return pkg
 }

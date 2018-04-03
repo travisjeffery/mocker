@@ -33,11 +33,11 @@ func main() {
 
 	m, err := mocker.New(src, pkg, iface, prefix, suffix, w)
 	if err != nil {
-		log.Fatal("failed to instantiate mocker")
+		log.Fatal("mocker: failed to instantiate")
 	}
 
 	if err = m.Mock(); err != nil {
-		log.Fatalf("failed to mock: %v", err)
+		log.Fatalf("mocker: failed to mock: %v", err)
 	}
 
 	if out != nil {
