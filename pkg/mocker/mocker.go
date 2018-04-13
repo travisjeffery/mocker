@@ -3,6 +3,7 @@ package mocker
 import (
 	"bytes"
 	"fmt"
+	"go/ast"
 	"go/format"
 	"go/parser"
 	"go/token"
@@ -54,10 +55,35 @@ func (m *mocker) Mock() error {
 		return errors.Wrap(err, "failed to parse template")
 	}
 	f := file{Pkg: *m.pkg, Imports: []iimport{{Path: "sync"}}}
-
 	pkgInfo, err := m.pkgInfo(*m.src)
 	if err != nil {
 		return errors.Wrap(err, "failed to get pkg info")
+	}
+	for _, pkg := range pkgs {
+		i := 0
+		files := make([]*ast.File, len(pkg.Files))
+		for _, f := range pkg.Files {
+			files[i] = f
+			i++
+		}
+		for _, f := range files {
+			for _, d := range f.Decls {
+				gd, ok := d.(*ast.GenDecl)
+				if !ok {
+					continue
+				}
+				for _, s := range gd.Specs {
+					is, ok := s.(*ast.ImportSpec)
+					if !ok {
+						continue
+					}
+					if is.Name != nil {
+						i := iimport{Name: is.Name.Name, Path: strings.Replace(is.Path.Value, `"`, "", -1)}
+						m.imports.named[i.Path] = i
+					}
+				}
+			}
+		}
 	}
 	for _, n := range *m.iface {
 		ifaceobj := pkgInfo.Pkg.Scope().Lookup(n)
