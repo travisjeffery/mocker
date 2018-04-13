@@ -1,10 +1,18 @@
 # mocker
 
-mocker for go.
+Mocker for go.
+
+Yeah there's many mockers now but each one I tried failed at least one of:
+
+- Vendored dependencies
+- Packages with named imports (e.g. `import mypkg "encoding/json"`)
+- Thread safety
+
+This one just works.
 
 ## Install
 
-Go: 
+Go:
 
 ``` sh
 $ go install github.com/travisjeffery/mocker/cmd/mocker
@@ -33,7 +41,7 @@ Args:
   <ifaces>  Interfaces to mock.
 ```
 
-## Example
+## CLI example
 
 Your interface:
 
@@ -75,6 +83,26 @@ func TestUserServiceEndpoint(t *testing.T) {
 }
 ```
 
+## Go generate example
+
+``` go
+// user_service.go
+
+package user
+
+// go:generate mocker --out user_service_mock.go --pkg mock . UserService
+type UserService interface {
+    Get(id string) (*User, error)
+}
+```
+
+Generate the mock:
+
+```
+$ go generate
+```
+
+
 ## API
 
 For each method in the interface, the generated mock struct has methods:
@@ -104,5 +132,3 @@ MIT
 - GitHub [@travisjeffery](https://github.com/travisjeffery)
 - Twitter [@travisjeffery](https://twitter.com/travisjeffery)
 - Medium [@travisjeffery](https://medium.com/@travisjeffery)
-
-
