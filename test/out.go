@@ -3,10 +3,11 @@
 package test
 
 import (
+	"sync"
+
 	av1 "github.com/travisjeffery/mocker/test/a"
 	bv1 "github.com/travisjeffery/mocker/test/b"
 	"github.com/travisjeffery/mocker/test/c"
-	"sync"
 )
 
 var (
@@ -101,7 +102,7 @@ func (mock *MockIface) Reset() {
 // Four calls FourFunc.
 func (mock *MockIface) Four(in1 c.Int) {
 	if mock.FourFunc == nil {
-		panic("moq: MockIface.FourFunc is nil but Iface.Four was just called")
+		panic("mocker: MockIface.FourFunc is nil but Iface.Four was just called")
 	}
 	callInfo := struct {
 		In1 c.Int
@@ -139,7 +140,7 @@ func (mock *MockIface) FourCalls() []struct {
 // One calls OneFunc.
 func (mock *MockIface) One(str string, variadic ...string) (string, []string) {
 	if mock.OneFunc == nil {
-		panic("moq: MockIface.OneFunc is nil but Iface.One was just called")
+		panic("mocker: MockIface.OneFunc is nil but Iface.One was just called")
 	}
 	callInfo := struct {
 		Str      string
@@ -181,7 +182,7 @@ func (mock *MockIface) OneCalls() []struct {
 // Three calls ThreeFunc.
 func (mock *MockIface) Three(in1 av1.Int) bv1.Str {
 	if mock.ThreeFunc == nil {
-		panic("moq: MockIface.ThreeFunc is nil but Iface.Three was just called")
+		panic("mocker: MockIface.ThreeFunc is nil but Iface.Three was just called")
 	}
 	callInfo := struct {
 		In1 av1.Int
@@ -219,7 +220,7 @@ func (mock *MockIface) ThreeCalls() []struct {
 // Two calls TwoFunc.
 func (mock *MockIface) Two(in1 int, in2 int) int {
 	if mock.TwoFunc == nil {
-		panic("moq: MockIface.TwoFunc is nil but Iface.Two was just called")
+		panic("mocker: MockIface.TwoFunc is nil but Iface.Two was just called")
 	}
 	callInfo := struct {
 		In1 int

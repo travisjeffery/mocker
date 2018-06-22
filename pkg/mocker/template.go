@@ -73,7 +73,7 @@ func (mock *{{$iface.Prefix}}{{$iface.Name}}{{$iface.Suffix}}) Reset() {
 // {{.Name}} calls {{.Name}}Func.
 func (mock *{{$iface.Prefix}}{{$iface.Name}}{{$iface.Suffix}}) {{.Name}}({{.ParamStr}}) {{.ReturnStr}} {
 	if mock.{{.Name}}Func == nil {
-		panic("moq: {{$iface.Prefix}}{{$iface.Name}}{{$iface.Suffix}}.{{.Name}}Func is nil but {{$iface.Name}}.{{.Name}} was just called")
+		panic("mocker: {{$iface.Prefix}}{{$iface.Name}}{{$iface.Suffix}}.{{.Name}}Func is nil but {{$iface.Name}}.{{.Name}} was just called")
 	}
 	callInfo := struct {
 		{{- range .Params }}
