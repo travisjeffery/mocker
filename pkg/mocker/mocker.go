@@ -378,14 +378,14 @@ func (g *generator) getArgNames(m *model.Method) []string {
 	for i, p := range m.In {
 		name := p.Name
 		if name == "" {
-			name = fmt.Sprintf("in%d", i)
+			name = fmt.Sprintf("arg%d", i)
 		}
 		argNames[i] = name
 	}
 	if m.Variadic != nil {
 		name := m.Variadic.Name
 		if name == "" {
-			name = fmt.Sprintf("in%d", len(m.In))
+			name = fmt.Sprintf("arg%d", len(m.In))
 		}
 		argNames = append(argNames, name)
 	}
