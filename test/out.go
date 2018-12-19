@@ -17,13 +17,13 @@ type MockIface struct {
 	OneFunc func(str string, variadic ...string) (string, []string)
 
 	lockTwo sync.Mutex
-	TwoFunc func(arg0, arg1 int) int
+	TwoFunc func(in0, in1 int) int
 
 	lockThree sync.Mutex
-	ThreeFunc func(arg0 github_com_travisjeffery_mocker_test_a.Int) github_com_travisjeffery_mocker_test_b.Str
+	ThreeFunc func(in0 github_com_travisjeffery_mocker_test_a.Int) github_com_travisjeffery_mocker_test_b.Str
 
 	lockFour sync.Mutex
-	FourFunc func(arg0 github_com_travisjeffery_mocker_test_c.Int)
+	FourFunc func(in0 github_com_travisjeffery_mocker_test_c.Int)
 
 	calls struct {
 		One []struct {
@@ -31,14 +31,14 @@ type MockIface struct {
 			Variadic []string
 		}
 		Two []struct {
-			Arg0 int
-			Arg1 int
+			In0 int
+			In1 int
 		}
 		Three []struct {
-			Arg0 github_com_travisjeffery_mocker_test_a.Int
+			In0 github_com_travisjeffery_mocker_test_a.Int
 		}
 		Four []struct {
-			Arg0 github_com_travisjeffery_mocker_test_c.Int
+			In0 github_com_travisjeffery_mocker_test_c.Int
 		}
 	}
 }
@@ -85,7 +85,7 @@ func (m *MockIface) OneCalls() []struct {
 }
 
 // Two mocks base method by wrapping the associated func.
-func (m *MockIface) Two(arg0, arg1 int) int {
+func (m *MockIface) Two(in0, in1 int) int {
 	m.lockTwo.Lock()
 	defer m.lockTwo.Unlock()
 
@@ -94,16 +94,16 @@ func (m *MockIface) Two(arg0, arg1 int) int {
 	}
 
 	call := struct {
-		Arg0 int
-		Arg1 int
+		In0 int
+		In1 int
 	}{
-		Arg0: arg0,
-		Arg1: arg1,
+		In0: in0,
+		In1: in1,
 	}
 
 	m.calls.Two = append(m.calls.Two, call)
 
-	return m.TwoFunc(arg0, arg1)
+	return m.TwoFunc(in0, in1)
 }
 
 // TwoCalled returns true if Two was called at least once.
@@ -116,8 +116,8 @@ func (m *MockIface) TwoCalled() bool {
 
 // TwoCalls returns the calls made to Two.
 func (m *MockIface) TwoCalls() []struct {
-	Arg0 int
-	Arg1 int
+	In0 int
+	In1 int
 } {
 	m.lockTwo.Lock()
 	defer m.lockTwo.Unlock()
@@ -126,7 +126,7 @@ func (m *MockIface) TwoCalls() []struct {
 }
 
 // Three mocks base method by wrapping the associated func.
-func (m *MockIface) Three(arg0 github_com_travisjeffery_mocker_test_a.Int) github_com_travisjeffery_mocker_test_b.Str {
+func (m *MockIface) Three(in0 github_com_travisjeffery_mocker_test_a.Int) github_com_travisjeffery_mocker_test_b.Str {
 	m.lockThree.Lock()
 	defer m.lockThree.Unlock()
 
@@ -135,14 +135,14 @@ func (m *MockIface) Three(arg0 github_com_travisjeffery_mocker_test_a.Int) githu
 	}
 
 	call := struct {
-		Arg0 github_com_travisjeffery_mocker_test_a.Int
+		In0 github_com_travisjeffery_mocker_test_a.Int
 	}{
-		Arg0: arg0,
+		In0: in0,
 	}
 
 	m.calls.Three = append(m.calls.Three, call)
 
-	return m.ThreeFunc(arg0)
+	return m.ThreeFunc(in0)
 }
 
 // ThreeCalled returns true if Three was called at least once.
@@ -155,7 +155,7 @@ func (m *MockIface) ThreeCalled() bool {
 
 // ThreeCalls returns the calls made to Three.
 func (m *MockIface) ThreeCalls() []struct {
-	Arg0 github_com_travisjeffery_mocker_test_a.Int
+	In0 github_com_travisjeffery_mocker_test_a.Int
 } {
 	m.lockThree.Lock()
 	defer m.lockThree.Unlock()
@@ -164,7 +164,7 @@ func (m *MockIface) ThreeCalls() []struct {
 }
 
 // Four mocks base method by wrapping the associated func.
-func (m *MockIface) Four(arg0 github_com_travisjeffery_mocker_test_c.Int) {
+func (m *MockIface) Four(in0 github_com_travisjeffery_mocker_test_c.Int) {
 	m.lockFour.Lock()
 	defer m.lockFour.Unlock()
 
@@ -173,14 +173,14 @@ func (m *MockIface) Four(arg0 github_com_travisjeffery_mocker_test_c.Int) {
 	}
 
 	call := struct {
-		Arg0 github_com_travisjeffery_mocker_test_c.Int
+		In0 github_com_travisjeffery_mocker_test_c.Int
 	}{
-		Arg0: arg0,
+		In0: in0,
 	}
 
 	m.calls.Four = append(m.calls.Four, call)
 
-	m.FourFunc(arg0)
+	m.FourFunc(in0)
 }
 
 // FourCalled returns true if Four was called at least once.
@@ -193,7 +193,7 @@ func (m *MockIface) FourCalled() bool {
 
 // FourCalls returns the calls made to Four.
 func (m *MockIface) FourCalls() []struct {
-	Arg0 github_com_travisjeffery_mocker_test_c.Int
+	In0 github_com_travisjeffery_mocker_test_c.Int
 } {
 	m.lockFour.Lock()
 	defer m.lockFour.Unlock()
