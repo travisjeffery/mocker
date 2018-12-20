@@ -1,46 +1,31 @@
 package main
 
 import (
-	"bytes"
-	"io"
-	"io/ioutil"
 	"log"
-	"os"
 
 	"github.com/travisjeffery/mocker/pkg/mocker"
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 )
 
 var (
-	out    = kingpin.Flag("out", "File to write mocks to. Stdout by default.").String()
-	pkg    = kingpin.Flag("pkg", "Name of package for mocks. Inferred by default.").String()
-	src    = kingpin.Arg("src", "Directory to find interfaces.").Required().String()
-	iface  = kingpin.Arg("ifaces", "Interfaces to mock.").Required().Strings()
-	prefix = kingpin.Flag("prefix", "Prefix for mocks.").Default("Mock").String()
-	suffix = kingpin.Flag("suffix", "Suffix for mocks.").String()
+	src     = kingpin.Arg("src", "File to find interfaces.").String()
+	dst     = kingpin.Flag("dst", "File write mocks. Leave blank to write to Stdout.").String()
+	pkg     = kingpin.Flag("pkg", "Name of package for mocks. Inferred by default.").String()
+	prefix  = kingpin.Flag("prefix", "Prefix of mock names.").Default("Mock").String()
+	suffix  = kingpin.Flag("suffix", "Suffix of mock names.").String()
+	selfpkg = kingpin.Flag("selfpkg", "The full package import path for the generated code. The purpose of this flag is to prevent import cycles in the generated code by trying to include its own package. This can happen if the mock's package is set to one of its inputs (usually the main one) and the output is stdio so mockgen cannot detect the final output package. Setting this flag will then tell mockgen which import to exclude.").String()
+	intfs   = kingpin.Arg("ifaces", "Interfaces to mock.").Strings()
 )
 
 func main() {
 	kingpin.Parse()
 
-	var buf bytes.Buffer
-	var w io.Writer
-
-	w = os.Stdout
-	if out != nil {
-		w = &buf
-	}
-
-	m, err := mocker.New(src, pkg, iface, prefix, suffix, w)
+	m, err := mocker.New(*src, *dst, *pkg, *prefix, *suffix, *selfpkg, *intfs)
 	if err != nil {
 		log.Fatal("mocker: failed to instantiate")
 	}
 
 	if err = m.Mock(); err != nil {
 		log.Fatalf("mocker: failed to mock: %v", err)
-	}
-
-	if out != nil {
-		ioutil.WriteFile(*out, buf.Bytes(), 0777)
 	}
 }

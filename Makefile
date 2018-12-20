@@ -4,9 +4,8 @@ clean:
 
 .PHONY: generate
 generate: clean
-	go run cmd/mocker/main.go --out test/out.go test Iface
+	go run cmd/mocker/main.go --dst test/out.go test/in.go Iface
 
 .PHONY: test
 test:
 	go test -v ./test
-

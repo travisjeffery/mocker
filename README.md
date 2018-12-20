@@ -37,7 +37,7 @@ Flags:
   --pkg=PKG  Name of package for mocks. Inferred by default.
 
 Args:
-  <src>     Directory to find interfaces.
+  <src>     File to find interfaces.
   <ifaces>  Interfaces to mock.
 ```
 
