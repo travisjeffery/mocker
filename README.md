@@ -29,16 +29,26 @@ $ brew install travisjeffery/homebrew-tap/mocker
 ## Usage
 
 ``` sh
-usage: mocker [<flags>] <src> <ifaces>...
+usage: mocker [<flags>] [<src>] [<ifaces>...]
 
 Flags:
-  --help     Show context-sensitive help (also try --help-long and --help-man).
-  --out=OUT  File to write mocks to. Stdout by default.
-  --pkg=PKG  Name of package for mocks. Inferred by default.
+  --help             Show context-sensitive help (also try --help-long and
+                     --help-man).
+  --dst=DST          File write mocks. Leave blank to write to Stdout.
+  --pkg=PKG          Name of package for mocks. Inferred by default.
+  --prefix="Mock"    Prefix of mock names.
+  --suffix=SUFFIX    Suffix of mock names.
+  --selfpkg=SELFPKG  The full package import path for the generated code. The
+                     purpose of this flag is to prevent import cycles in the
+                     generated code by trying to include its own package. This
+                     can happen if the mock's package is set to one of its
+                     inputs (usually the main one) and the output is stdio so
+                     mockgen cannot detect the final output package. Setting
+                     this flag will then tell mockgen which import to exclude.
 
 Args:
-  <src>     File to find interfaces.
-  <ifaces>  Interfaces to mock.
+  [<src>]     File to find interfaces.
+  [<ifaces>]  Interfaces to mock.
 ```
 
 ## CLI example
@@ -51,14 +61,14 @@ Your interface:
 package user
 
 type UserService interface {
-    Get(id string) (*User, error)
+	Get(id string) (*User, error)
 }
 ```
 
 Generate the mock:
 
 ```
-$ mocker --out mock/user_service_mock.go --pkg mock . UserService
+$ mocker --dst mock/user_service_mock.go --pkg mock user_service.go UserService
 ```
 
 Use in your tests:
@@ -70,7 +80,7 @@ package test_endpoint
 
 func TestUserServiceEndpoint(t *testing.T) {
     us := &mock.UserService{
-        GetUserFunc: func(id string) (*user.User, error) {
+        GetFunc: func(id string) (*user.User, error) {
             return &User{ID: id}, nil
         },
     }
@@ -90,9 +100,9 @@ func TestUserServiceEndpoint(t *testing.T) {
 
 package user
 
-// go:generate mocker --out user_service_mock.go --pkg mock . UserService
+//go:generate mocker --dst mock/$GOFILE --pkg mock $GOFILE UserService
 type UserService interface {
-    Get(id string) (*User, error)
+	Get(id string) (*User, error)
 }
 ```
 
