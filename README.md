@@ -18,14 +18,6 @@ Go:
 $ go install github.com/travisjeffery/mocker/cmd/mocker
 ```
 
-Homebrew:
-
-``` sh
-$ brew install travisjeffery/homebrew-tap/mocker
-```
-
-[Download](https://github.com/travisjeffery/mocker/releases)
-
 ## Usage
 
 ``` sh
