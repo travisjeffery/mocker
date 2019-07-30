@@ -13,8 +13,8 @@ var (
 	pkg     = kingpin.Flag("pkg", "Name of package for mocks. Inferred by default.").String()
 	prefix  = kingpin.Flag("prefix", "Prefix of mock names.").Default("Mock").String()
 	suffix  = kingpin.Flag("suffix", "Suffix of mock names.").String()
-	selfpkg = kingpin.Flag("selfpkg", "The full package import path for the generated code. The purpose of this flag is to prevent import cycles in the generated code by trying to include its own package. This can happen if the mock's package is set to one of its inputs (usually the main one) and the output is stdio so mockgen cannot detect the final output package. Setting this flag will then tell mockgen which import to exclude.").String()
-	intfs   = kingpin.Arg("ifaces", "Interfaces to mock.").Strings()
+	selfpkg = kingpin.Flag("selfpkg", "The full package import path for the generated code. The purpose of this flag is to prevent import cycles in the generated code by trying to include its own package. This can happen if the mock's package is set to one of its inputs (usually the main one) and the output is stdio so mocker cannot detect the final output package. Setting this flag will then tell mocker which import to exclude.").String()
+	intfs   = kingpin.Arg("ifaces", "Interfaces to mock. Leave empty to mock every interface in the file.").Strings()
 )
 
 func main() {
