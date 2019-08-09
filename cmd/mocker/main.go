@@ -17,14 +17,16 @@ var (
 	intfs   = kingpin.Arg("ifaces", "Interfaces to mock.").Strings()
 )
 
+func init() {
+	kingpin.Version("1.0.0")
+}
+
 func main() {
 	kingpin.Parse()
-
 	m, err := mocker.New(*src, *dst, *pkg, *prefix, *suffix, *selfpkg, *intfs)
 	if err != nil {
 		log.Fatal("mocker: failed to instantiate")
 	}
-
 	if err = m.Mock(); err != nil {
 		log.Fatalf("mocker: failed to mock: %v", err)
 	}
