@@ -18,7 +18,7 @@ var (
 )
 
 func init() {
-	kingpin.Version("1.0.0")
+	kingpin.Version("1.1.0")
 }
 
 func main() {
