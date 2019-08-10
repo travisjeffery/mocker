@@ -9,3 +9,7 @@ generate: clean
 .PHONY: test
 test:
 	go test -v ./test
+
+.PHONY: install
+install:
+	go install ./cmd/mocker
