@@ -40,13 +40,18 @@ var (
 
 // TODO: simplify error reporting
 
-func ParseFile(source string) (*model.Package, error) {
+type Package struct {
+	*model.Package
+	PkgPath string
+}
+
+func ParseFile(source string) (*Package, error) {
 	srcDir, err := filepath.Abs(filepath.Dir(source))
 	if err != nil {
 		return nil, fmt.Errorf("failed getting source directory: %v", err)
 	}
 
-	cfg := &packages.Config{Mode: packages.NeedSyntax, Tests: true}
+	cfg := &packages.Config{Mode: packages.NeedSyntax | packages.NeedName, Tests: true}
 	pkgs, err := packages.Load(cfg, "file="+source)
 	if packages.PrintErrors(pkgs) > 0 || len(pkgs) == 0 {
 		return nil, fmt.Errorf("loading packages failed")
@@ -152,7 +157,7 @@ func (p *fileParser) addAuxInterfacesFromFile(pkg string, file *ast.File) {
 
 // parseFile loads all file imports and auxiliary files import into the
 // fileParser, parses all file interfaces and returns package model.
-func (p *fileParser) parseFile(importPath string, file *ast.File) (*model.Package, error) {
+func (p *fileParser) parseFile(importPath string, file *ast.File) (*Package, error) {
 	allImports, dotImports := importsOfFile(file)
 	// Don't stomp imports provided by -imports. Those should take precedence.
 	for pkg, path := range allImports {
@@ -179,10 +184,13 @@ func (p *fileParser) parseFile(importPath string, file *ast.File) (*model.Packag
 		}
 		is = append(is, i)
 	}
-	return &model.Package{
-		Name:       file.Name.String(),
-		Interfaces: is,
-		DotImports: dotImports,
+	return &Package{
+		Package: &model.Package{
+			Name:       file.Name.String(),
+			Interfaces: is,
+			DotImports: dotImports,
+		},
+		PkgPath: importPath,
 	}, nil
 }
 

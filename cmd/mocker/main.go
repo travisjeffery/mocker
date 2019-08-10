@@ -7,27 +7,29 @@ import (
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 )
 
-var (
-	src     = kingpin.Arg("src", "File to find interfaces.").String()
-	dst     = kingpin.Flag("dst", "File write mocks. Leave blank to write to Stdout.").String()
-	pkg     = kingpin.Flag("pkg", "Name of package for mocks. Inferred by default.").String()
-	prefix  = kingpin.Flag("prefix", "Prefix of mock names.").Default("Mock").String()
-	suffix  = kingpin.Flag("suffix", "Suffix of mock names.").String()
-	selfpkg = kingpin.Flag("selfpkg", "The full package import path for the generated code. The purpose of this flag is to prevent import cycles in the generated code by trying to include its own package. This can happen if the mock's package is set to one of its inputs (usually the main one) and the output is stdio so mockgen cannot detect the final output package. Setting this flag will then tell mockgen which import to exclude.").String()
-	intfs   = kingpin.Arg("ifaces", "Interfaces to mock.").Strings()
-)
+var c = mocker.Config{}
 
 func init() {
-	kingpin.Version("1.1.0")
+	kingpin.Version("1.1.0-pre")
+
+	kingpin.Arg("source-file", "Source file containing interfaces to generate mocks from.").StringVar(&c.Src)
+	kingpin.Arg("source-interfaces", "List of interface names to mock. Comma delimited.").StringsVar(&c.Itf)
+	kingpin.Flag("destination", "File to write generated mocks in. Default is stdout.").Short('d').StringVar(&c.Dst)
+	kingpin.Flag("package", "Name of the mock's package. Inferred by default.").Short('p').StringVar(&c.Pkg)
+	kingpin.Flag("prefix", "Prefix to put in front of the generated interface mock names.").Short('P').Default("Mock").StringVar(&c.Pre)
+	kingpin.Flag("suffix", "Suffix to put at the enf of the generated interface mock names.").Short('S').StringVar(&c.Suf)
+	kingpin.Flag("import-path", "The full package import path for the generated code. The purpose of this flag is to prevent import cycles in the generated code by trying to include its own package.").Short('s').StringVar(&c.Slf)
+
+	// to maintain backwards compatibility
+	kingpin.Flag("dst", "").Hidden().StringVar(&c.Dst)
+	kingpin.Flag("pkg", "").Hidden().StringVar(&c.Pkg)
+	kingpin.Flag("selfpkg", "").Hidden().StringVar(&c.Slf)
 }
 
 func main() {
 	kingpin.Parse()
-	m, err := mocker.New(*src, *dst, *pkg, *prefix, *suffix, *selfpkg, *intfs)
-	if err != nil {
-		log.Fatal("mocker: failed to instantiate")
-	}
-	if err = m.Mock(); err != nil {
+
+	if err := mocker.Run(c); err != nil {
 		log.Fatalf("mocker: failed to mock: %v", err)
 	}
 }
