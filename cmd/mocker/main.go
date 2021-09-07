@@ -10,7 +10,7 @@ import (
 var c = mocker.Config{}
 
 func init() {
-	kingpin.Version("1.1.0")
+	kingpin.Version("1.1.1")
 
 	kingpin.Arg("source-file", "Source file containing interfaces to generate mocks from.").StringVar(&c.Src)
 	kingpin.Arg("source-interfaces", "List of interface names to mock. Comma delimited.").StringsVar(&c.Itf)
