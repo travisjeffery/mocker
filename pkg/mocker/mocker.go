@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"go/token"
 	"log"
-	"log/syslog"
 	"os"
 	"path/filepath"
 	"sort"
@@ -51,17 +50,9 @@ func Run(c Config) error {
 		dst = f
 	}
 
-	l, err := syslog.New(syslog.LOG_DEBUG, "mocker")
-	if err != nil {
-		return err
-	}
-
-	l.Debug("pkg path: " + pkg.PkgPath)
-
 	g := &Generator{
-		c:      c,
-		pkg:    pkg,
-		logger: l,
+		c:   c,
+		pkg: pkg,
 	}
 
 	if err := g.Generate(); err != nil {
@@ -79,7 +70,6 @@ type Generator struct {
 	imports map[string]string // import path to pkg name
 	types   map[string]string // interface type name to name used in generated code
 	indent  string
-	logger  *syslog.Writer
 }
 
 // Output returns the Generator's output, formatted in the standard Go style.
@@ -113,7 +103,6 @@ func (g *Generator) Generate() error {
 	g.GenerateImports()
 	for _, intf := range g.pkg.Interfaces {
 		if !contains(g.c.Itf, intf.Name) {
-			g.logger.Debug("skipped interface: " + intf.Name)
 			continue
 		}
 		if err := g.GenerateInterface(intf); err != nil {
@@ -125,7 +114,7 @@ func (g *Generator) Generate() error {
 
 func (g *Generator) setupImports() {
 	imports := g.pkg.Imports()
-	sortedPaths := make([]string, len(imports), len(imports))
+	sortedPaths := make([]string, len(imports))
 	sortedPaths = append(sortedPaths, "sync")
 	i := 0
 	for path := range imports {
@@ -153,10 +142,8 @@ func (g *Generator) GenerateImports() {
 	g.in()
 	for path, pkg := range g.imports {
 		if path == g.c.Slf {
-			g.logger.Debug("skipped import: " + path + ": " + pkg)
 			continue
 		}
-		g.logger.Debug("import: " + path + ": " + pkg)
 		g.p("%v %q", pkg, path)
 	}
 	g.out()
@@ -164,8 +151,6 @@ func (g *Generator) GenerateImports() {
 }
 
 func (g *Generator) GenerateInterface(intf *model.Interface) error {
-	g.logger.Debug("generate interface: " + intf.Name)
-
 	mockType := g.typeName(intf.Name)
 
 	g.p("")
@@ -248,8 +233,6 @@ func (g *Generator) GenerateMethods(mockType string, intf *model.Interface) erro
 }
 
 func (g *Generator) GenerateMethod(mockType string, m *model.Method) error {
-	g.logger.Debug("generate method: " + m.Name)
-
 	argNames := g.getArgNames(m)
 	argTypes := g.getArgTypes(m)
 	argString := makeArgString(argNames, argTypes)
