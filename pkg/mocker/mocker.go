@@ -114,7 +114,7 @@ func (g *Generator) Generate() error {
 
 func (g *Generator) setupImports() {
 	imports := g.pkg.Imports()
-	sortedPaths := make([]string, len(imports))
+	sortedPaths := make([]string, len(imports), len(imports))
 	sortedPaths = append(sortedPaths, "sync")
 	i := 0
 	for path := range imports {

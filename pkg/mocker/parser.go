@@ -52,8 +52,8 @@ func ParseFile(source string) (*Package, error) {
 	}
 
 	cfg := &packages.Config{Mode: packages.NeedSyntax | packages.NeedName, Tests: true}
-	pkgs, err := packages.Load(cfg, "file="+source)
-	if err != nil || packages.PrintErrors(pkgs) > 0 || len(pkgs) == 0 {
+	pkgs, _ := packages.Load(cfg, "file="+source)
+	if packages.PrintErrors(pkgs) > 0 || len(pkgs) == 0 {
 		return nil, fmt.Errorf("loading packages failed")
 	}
 
@@ -237,6 +237,7 @@ func (p *fileParser) parseInterface(name, pkg string, it *ast.InterfaceType) (*m
 			if err != nil {
 				return nil, err
 			}
+
 			intf.Methods = append(intf.Methods, m)
 		case *ast.Ident:
 			// Embedded interface in this package.
@@ -252,7 +253,9 @@ func (p *fileParser) parseInterface(name, pkg string, it *ast.InterfaceType) (*m
 			}
 			// Copy the methods.
 			// TODO: apply shadowing rules.
-			intf.Methods = append(intf.Methods, eintf.Methods...)
+			for _, m := range eintf.Methods {
+				intf.Methods = append(intf.Methods, m)
+			}
 		case *ast.SelectorExpr:
 			// Embedded interface in another package.
 			fpkg, sel := v.X.(*ast.Ident).String(), v.Sel.String()
@@ -278,7 +281,9 @@ func (p *fileParser) parseInterface(name, pkg string, it *ast.InterfaceType) (*m
 			}
 			// Copy the methods.
 			// TODO: apply shadowing rules.
-			intf.Methods = append(intf.Methods, eintf.Methods...)
+			for _, m := range eintf.Methods {
+				intf.Methods = append(intf.Methods, m)
+			}
 		default:
 			return nil, fmt.Errorf("don't know how to mock method of type %T", field.Type)
 		}
